@@ -49,4 +49,8 @@ public class UserService {
         userResponse.setUpdatedAt(savedUser.getUpdatedAt());
         return userResponse;
     }
+
+    public Boolean existByUserid(String userId) {
+        return repository.existsById(userId);
+    }
 }

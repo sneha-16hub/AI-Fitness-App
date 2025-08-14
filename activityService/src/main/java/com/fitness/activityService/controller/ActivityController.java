@@ -17,7 +17,7 @@ public class ActivityController {
         return ResponseEntity.ok(service.trackActivity(request));
     }
     @GetMapping
-    private ResponseEntity<List<ActivityResponse>> getActivities(@RequestHeader("X-User_Id") String userId){
+    private ResponseEntity<List<ActivityResponse>> getActivities(@RequestHeader("X-User-ID") String userId){
         return ResponseEntity.ok(service.getUserActivities(userId));
 
     }
