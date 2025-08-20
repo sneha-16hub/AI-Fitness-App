@@ -4,6 +4,10 @@ import com.fitness.activityService.model.Activity;
 import com.fitness.activityService.model.ActivityType;
 import com.fitness.activityService.repository.ActivityRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.fitness.activityService.dto.ActivityRequest;
 import com.fitness.activityService.dto.ActivityResponse;
@@ -13,15 +17,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 public class ActivityService {
-    private ActivityRepository repository;
-    private UserValidationService userValidationService;
+    private final ActivityRepository repository;
+    private final UserValidationService userValidationService;
+    private final RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+
+    @Value("${rabbitmq.routing.key}")
+    private String routingKey;
+
     public ActivityResponse trackActivity(ActivityRequest request){
-        boolean isValidUser=userValidationService.validateUser(request.getUserId());
-        if(!isValidUser){
-            throw new RuntimeException("Invalid user"+request.getUserId());
-        }
+//        boolean isValidUser=userValidationService.validateUser(request.getUserId());
+//        log.info("Validated User:{}",isValidUser);
+//        if(!isValidUser){
+//            throw new RuntimeException("Invalid user"+request.getUserId());
+//        }
         Activity activity=Activity.builder()
                 .userId(request.getUserId())
                 .activityType(ActivityType.valueOf(request.getActivityType()))
@@ -33,6 +46,14 @@ public class ActivityService {
 
 
         Activity savedActivity=repository.save(activity);
+        //publish to rabbitMQ for Ai processing
+
+        try{
+            rabbitTemplate.convertAndSend(exchange,routingKey,savedActivity);
+
+        }catch(Exception e){
+            log.error("Failed to publish activity to RabbitMQ", e);
+        }
         return mapToResponse(savedActivity);
 
     }
