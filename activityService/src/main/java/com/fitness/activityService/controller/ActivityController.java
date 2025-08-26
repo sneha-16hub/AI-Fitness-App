@@ -13,7 +13,10 @@ public class ActivityController {
     @Autowired
     ActivityService service;
     @PostMapping
-    private ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request){
+    private ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request, @RequestHeader("X-User-ID") String userId){
+        if(userId!=null){
+            request.setUserId(userId);
+        }
         return ResponseEntity.ok(service.trackActivity(request));
     }
     @GetMapping

@@ -30,17 +30,27 @@ public class ActivityService {
     private String routingKey;
 
     public ActivityResponse trackActivity(ActivityRequest request){
-//        boolean isValidUser=userValidationService.validateUser(request.getUserId());
-//        log.info("Validated User:{}",isValidUser);
+       boolean isValidUser=userValidationService.validateUser(request.getUserId());
+       log.info("Validated User:{}",request.getUserId());
 //        if(!isValidUser){
 //            throw new RuntimeException("Invalid user"+request.getUserId());
 //        }
+        LocalDateTime startTime;
+        if (request.getStartTime() == null) {
+            startTime = LocalDateTime.now();
+        }else {
+            try {
+                startTime = LocalDateTime.parse(request.getStartTime());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid start time format: " + request.getStartTime());
+            }
+        }
         Activity activity=Activity.builder()
                 .userId(request.getUserId())
                 .activityType(ActivityType.valueOf(request.getActivityType()))
                 .caloriesBurned(request.getCaloriesBurned())
                 .duration(request.getDuration())
-                .startTime(LocalDateTime.parse(request.getStartTime()))
+                .startTime(startTime)
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 

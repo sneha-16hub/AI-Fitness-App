@@ -17,6 +17,7 @@ public class User {
     private String id;
     @Column(nullable=false, unique=true)
     private String email;
+    private String keycloakId;
     private String firstName;
     private String lastName;
     private String password;
